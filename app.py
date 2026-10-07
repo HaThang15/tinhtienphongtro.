@@ -74,10 +74,12 @@ st.markdown("""
 
 
 
- st.image(
+st.image(
     "anh_tam_an.jpg",
     use_container_width=True
 )
+
+
 
 
 
