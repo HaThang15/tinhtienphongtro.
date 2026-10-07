@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime
+import os
+from openai import OpenAI
 
 # =========================================================
 # CẤU HÌNH TRANG
@@ -10,6 +12,17 @@ st.set_page_config(
     page_icon="🏠",
     layout="wide"
 )
+
+# =========================================================
+# CẤU HÌNH OPENAI
+# =========================================================
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if OPENAI_API_KEY:
+    client = OpenAI(api_key=OPENAI_API_KEY)
+else:
+    client = None
 
 # =========================================================
 # CSS GIAO DIỆN
@@ -68,19 +81,34 @@ st.markdown("""
     margin-bottom: 10px;
 }
 
+.ai-title {
+    text-align: center;
+    color: #1f4e79;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.quick-question {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 
+# =========================================================
+# ẢNH TÂM AN
+# =========================================================
 
-
-st.image(
-    "anh_tam_an.jpg",
-    use_container_width=True
-)
-
-
-
+try:
+    st.image(
+        "anh_tam_an.jpg",
+        use_container_width=True
+    )
+except:
+    st.info("ℹ️ Chưa tìm thấy ảnh anh_tam_an.jpg")
 
 
 # =========================================================
@@ -93,7 +121,7 @@ st.markdown(
 )
 
 st.markdown(
-    '<div class="subtitle">Hệ thống quản lý và tính tiền phòng trọ</div>',
+    '<div class="subtitle">Hệ thống quản lý và tính tiền phòng trọ thông minh</div>',
     unsafe_allow_html=True
 )
 
@@ -143,8 +171,15 @@ if "nguoi_thue" not in st.session_state:
 # =========================================================
 
 if "hoa_don_phong" not in st.session_state:
-
     st.session_state.hoa_don_phong = {}
+
+
+# =========================================================
+# LƯU LỊCH SỬ CHAT
+# =========================================================
+
+if "ai_messages" not in st.session_state:
+    st.session_state.ai_messages = []
 
 
 # =========================================================
@@ -152,8 +187,58 @@ if "hoa_don_phong" not in st.session_state:
 # =========================================================
 
 def format_money(number):
-
     return f"{number:,.0f} VNĐ".replace(",", ".")
+
+
+# =========================================================
+# HÀM TẠO DỮ LIỆU CHO AI
+# =========================================================
+
+def tao_du_lieu_phong():
+
+    if not st.session_state.hoa_don_phong:
+
+        return "Hiện tại chưa có hóa đơn phòng nào."
+
+
+    thong_tin = ""
+
+    for phong, hd in st.session_state.hoa_don_phong.items():
+
+        thong_tin += f"""
+PHÒNG: {phong}
+Người thuê: {hd['nguoi_thue']}
+
+Tiền phòng:
+{format_money(hd['tien_phong'])}
+
+Điện:
+{hd['so_dien']:.0f} kWh
+Tiền điện: {format_money(hd['tien_dien'])}
+
+Nước:
+{hd['so_nuoc']:.0f} m³
+Tiền nước: {format_money(hd['tien_nuoc'])}
+
+WiFi:
+{format_money(hd['wifi'])}
+
+Phí dịch vụ:
+{format_money(hd['phi_khac'])}
+
+TỔNG:
+{format_money(hd['tong'])}
+
+Trạng thái:
+{hd['trang_thai']}
+
+Ngày tạo:
+{hd['ngay_tao']}
+
+-----------------------------------
+"""
+
+    return thong_tin
 
 
 # =========================================================
@@ -165,6 +250,7 @@ menu = st.sidebar.radio(
     [
         "🏠 Tính tiền phòng",
         "📋 Quản lý toàn bộ phòng",
+        "🤖 Trợ lý AI TÂM AN",
         "ℹ️ Thông tin TÂM AN"
     ]
 )
@@ -740,7 +826,477 @@ elif menu == "📋 Quản lý toàn bộ phòng":
 
 
 # =========================================================
-# TRANG 3: THÔNG TIN
+# TRANG 3: BOT CHAT AI
+# =========================================================
+
+elif menu == "🤖 Trợ lý AI TÂM AN":
+
+    st.markdown(
+        '<div class="ai-title">🤖 TRỢ LÝ AI TÂM AN</div>',
+        unsafe_allow_html=True
+    )
+
+    st.write(
+        "Trợ lý thông minh hỗ trợ quản lý phòng trọ "
+        "và trả lời câu hỏi ở nhiều lĩnh vực."
+    )
+
+
+    # =====================================================
+    # THÔNG TIN PHÒNG CHO AI
+    # =====================================================
+
+    thong_tin_phong = tao_du_lieu_phong()
+
+
+    # =====================================================
+    # CÂU HỎI NHANH
+    # =====================================================
+
+    st.subheader("⚡ Câu hỏi nhanh")
+
+    st.caption(
+        "Bấm vào câu hỏi bên dưới để AI trả lời tự động."
+    )
+
+
+    col1, col2, col3 = st.columns(3)
+
+
+    with col1:
+
+        btn_doanh_thu = st.button(
+            "💰 Tổng doanh thu?",
+            use_container_width=True
+        )
+
+        btn_chua_tt = st.button(
+            "🏠 Phòng chưa thanh toán?",
+            use_container_width=True
+        )
+
+
+    with col2:
+
+        btn_dien = st.button(
+            "⚡ Tiền điện các phòng?",
+            use_container_width=True
+        )
+
+        btn_nuoc = st.button(
+            "💧 Tiền nước các phòng?",
+            use_container_width=True
+        )
+
+
+    with col3:
+
+        btn_thong_ke = st.button(
+            "📊 Thống kê toàn bộ",
+            use_container_width=True
+        )
+
+        btn_cach_tinh = st.button(
+            "🧮 Cách tính tiền phòng",
+            use_container_width=True
+        )
+
+
+    # =====================================================
+    # XỬ LÝ CÂU HỎI NHANH
+    # =====================================================
+
+    cau_hoi_nhanh = None
+
+
+    if btn_doanh_thu:
+
+        tong_doanh_thu = sum(
+            hd["tong"]
+            for hd in st.session_state.hoa_don_phong.values()
+        )
+
+        cau_hoi_nhanh = f"""
+Hãy thông báo cho chủ trọ:
+
+Tổng doanh thu hiện tại:
+{format_money(tong_doanh_thu)}
+
+Hãy trả lời ngắn gọn và rõ ràng.
+"""
+
+
+    elif btn_chua_tt:
+
+        danh_sach = []
+
+        for phong, hd in st.session_state.hoa_don_phong.items():
+
+            if hd["trang_thai"] != "✅ Đã thanh toán":
+
+                danh_sach.append(
+                    f"- {phong}: {hd['nguoi_thue']}"
+                )
+
+
+        if danh_sach:
+
+            cau_hoi_nhanh = """
+Hãy cho chủ trọ biết các phòng chưa thanh toán:
+
+""" + "\n".join(danh_sach)
+
+        else:
+
+            cau_hoi_nhanh = """
+Hiện tại tất cả các phòng đã thanh toán.
+Hãy thông báo ngắn gọn cho chủ trọ.
+"""
+
+
+    elif btn_dien:
+
+        if st.session_state.hoa_don_phong:
+
+            danh_sach = []
+
+            for phong, hd in st.session_state.hoa_don_phong.items():
+
+                danh_sach.append(
+                    f"- {phong}: "
+                    f"{hd['so_dien']:.0f} kWh - "
+                    f"{format_money(hd['tien_dien'])}"
+                )
+
+            cau_hoi_nhanh = """
+Hãy liệt kê tiền điện của từng phòng:
+
+""" + "\n".join(danh_sach)
+
+        else:
+
+            cau_hoi_nhanh = """
+Hiện chưa có dữ liệu tiền điện.
+"""
+
+
+    elif btn_nuoc:
+
+        if st.session_state.hoa_don_phong:
+
+            danh_sach = []
+
+            for phong, hd in st.session_state.hoa_don_phong.items():
+
+                danh_sach.append(
+                    f"- {phong}: "
+                    f"{hd['so_nuoc']:.0f} m³ - "
+                    f"{format_money(hd['tien_nuoc'])}"
+                )
+
+            cau_hoi_nhanh = """
+Hãy liệt kê tiền nước của từng phòng:
+
+""" + "\n".join(danh_sach)
+
+        else:
+
+            cau_hoi_nhanh = """
+Hiện chưa có dữ liệu tiền nước.
+"""
+
+
+    elif btn_thong_ke:
+
+        so_phong = len(
+            st.session_state.hoa_don_phong
+        )
+
+        da_tt = sum(
+            1
+            for hd in st.session_state.hoa_don_phong.values()
+            if hd["trang_thai"] == "✅ Đã thanh toán"
+        )
+
+        chua_tt = so_phong - da_tt
+
+        tong_doanh_thu = sum(
+            hd["tong"]
+            for hd in st.session_state.hoa_don_phong.values()
+        )
+
+        cau_hoi_nhanh = f"""
+Hãy thống kê hệ thống phòng trọ TÂM AN:
+
+Số phòng đã có hóa đơn: {so_phong}
+
+Đã thanh toán: {da_tt} phòng
+
+Chưa thanh toán: {chua_tt} phòng
+
+Tổng doanh thu:
+{format_money(tong_doanh_thu)}
+
+Hãy trình bày rõ ràng bằng gạch đầu dòng.
+"""
+
+
+    elif btn_cach_tinh:
+
+        cau_hoi_nhanh = """
+Hãy giải thích cách tính tiền phòng TÂM AN.
+
+Tiền điện =
+(Điện tháng này - Điện tháng trước)
+× Đơn giá điện.
+
+Tiền nước =
+(Nước tháng này - Nước tháng trước)
+× Đơn giá nước.
+
+Tổng tiền =
+Tiền phòng
++ Tiền điện
++ Tiền nước
++ WiFi
++ Phí dịch vụ.
+
+Giải thích đơn giản để chủ trọ dễ hiểu.
+"""
+
+
+    # =====================================================
+    # NẾU CÓ CÂU HỎI NHANH
+    # =====================================================
+
+    if cau_hoi_nhanh:
+
+        st.session_state.ai_question = cau_hoi_nhanh
+
+
+    # =====================================================
+    # HIỂN THỊ LỊCH SỬ CHAT
+    # =====================================================
+
+    for message in st.session_state.ai_messages:
+
+        with st.chat_message(
+            message["role"]
+        ):
+
+            st.markdown(
+                message["content"]
+            )
+
+
+    # =====================================================
+    # Ô NHẬP CÂU HỎI TỰ DO
+    # =====================================================
+
+    cau_hoi_nhap = st.chat_input(
+        "💬 Nhập câu hỏi bất kỳ..."
+    )
+
+
+    if cau_hoi_nhap:
+
+        st.session_state.ai_question = cau_hoi_nhap
+
+
+    # =====================================================
+    # XỬ LÝ AI
+    # =====================================================
+
+    if "ai_question" in st.session_state:
+
+        cau_hoi = st.session_state.ai_question
+
+        del st.session_state.ai_question
+
+
+        # -------------------------------------------------
+        # KIỂM TRA API
+        # -------------------------------------------------
+
+        if client is None:
+
+            st.error(
+                """
+                ⚠️ Chưa cấu hình OPENAI_API_KEY.
+
+                Hãy cài thư viện:
+
+                pip install openai
+
+                Sau đó thiết lập OPENAI_API_KEY.
+                """
+            )
+
+        else:
+
+            # -------------------------------------------------
+            # LƯU CÂU HỎI
+            # -------------------------------------------------
+
+            st.session_state.ai_messages.append(
+                {
+                    "role": "user",
+                    "content": cau_hoi
+                }
+            )
+
+
+            with st.chat_message("user"):
+
+                st.markdown(cau_hoi)
+
+
+            # -------------------------------------------------
+            # SYSTEM PROMPT
+            # -------------------------------------------------
+
+            system_prompt = f"""
+Bạn là TRỢ LÝ AI của hệ thống PHÒNG TRỌ TÂM AN.
+
+Bạn có hai nhiệm vụ chính:
+
+NHIỆM VỤ 1:
+Hỗ trợ quản lý phòng trọ.
+
+Bạn có thể:
+- Tính tiền phòng.
+- Giải thích tiền điện.
+- Giải thích tiền nước.
+- Kiểm tra người thuê.
+- Kiểm tra phòng đã thanh toán.
+- Kiểm tra phòng chưa thanh toán.
+- Tổng hợp doanh thu.
+- Phân tích dữ liệu các phòng.
+- Giải thích cách tính hóa đơn.
+
+NHIỆM VỤ 2:
+Trả lời câu hỏi ở nhiều lĩnh vực.
+
+Nếu người dùng hỏi về:
+- Học tập
+- Kinh doanh
+- Marketing
+- Quản trị
+- Python
+- Excel
+- Công nghệ
+- Toán
+- Viết văn
+- Ý tưởng kinh doanh
+- Kiến thức đời sống
+
+thì hãy cố gắng trả lời hữu ích.
+
+===============================
+DỮ LIỆU PHÒNG TRỌ TÂM AN
+===============================
+
+{thong_tin_phong}
+
+===============================
+QUY TẮC
+===============================
+
+1. Khi hỏi về phòng trọ:
+   phải ưu tiên dữ liệu ở trên.
+
+2. Không được tự bịa số liệu phòng.
+
+3. Nếu chưa có dữ liệu:
+   hãy nói rõ "Chưa có dữ liệu".
+
+4. Khi tính toán:
+   hãy trình bày công thức và kết quả.
+
+5. Trả lời bằng tiếng Việt.
+
+6. Trả lời dễ hiểu.
+
+7. Nếu câu hỏi đơn giản:
+   trả lời ngắn gọn.
+
+8. Nếu câu hỏi yêu cầu giải thích:
+   trình bày từng bước.
+
+9. Không được nói rằng bạn đã thực hiện một hành động
+   nếu chương trình chưa thực sự thực hiện hành động đó.
+
+10. Bạn là trợ lý thông minh của chủ trọ TÂM AN.
+"""
+
+
+            # -------------------------------------------------
+            # GỌI AI
+            # -------------------------------------------------
+
+            try:
+
+                response = client.responses.create(
+
+                    model="gpt-5.5",
+
+                    instructions=system_prompt,
+
+                    input=cau_hoi
+                )
+
+
+                answer = response.output_text
+
+
+                # -------------------------------------------------
+                # LƯU CÂU TRẢ LỜI
+                # -------------------------------------------------
+
+                st.session_state.ai_messages.append(
+                    {
+                        "role": "assistant",
+                        "content": answer
+                    }
+                )
+
+
+                # -------------------------------------------------
+                # HIỂN THỊ
+                # -------------------------------------------------
+
+                with st.chat_message(
+                    "assistant"
+                ):
+
+                    st.markdown(answer)
+
+
+            except Exception as e:
+
+                st.error(
+                    f"❌ Lỗi kết nối AI: {str(e)}"
+                )
+
+
+    # =====================================================
+    # XÓA LỊCH SỬ
+    # =====================================================
+
+    st.divider()
+
+    if st.button(
+        "🗑️ Xóa lịch sử trò chuyện",
+        use_container_width=True
+    ):
+
+        st.session_state.ai_messages = []
+
+        st.rerun()
+
+
+# =========================================================
+# TRANG 4: THÔNG TIN
 # =========================================================
 
 elif menu == "ℹ️ Thông tin TÂM AN":
@@ -762,6 +1318,18 @@ hàng tháng một cách nhanh chóng, rõ ràng.
 - 📶 Tiền WiFi
 - 🗑️ Phí rác / dịch vụ
 - 💳 Trạng thái thanh toán
+
+### 🤖 Trợ lý AI
+
+Hệ thống được tích hợp trợ lý AI có thể:
+
+- Trả lời câu hỏi về tiền phòng.
+- Kiểm tra tình trạng thanh toán.
+- Phân tích tiền điện.
+- Phân tích tiền nước.
+- Thống kê doanh thu.
+- Giải thích cách tính tiền.
+- Trả lời các câu hỏi ở nhiều lĩnh vực khác.
 
 ### 📊 Quản lý
 
