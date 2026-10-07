@@ -84,7 +84,7 @@ st.markdown("""
 # Sau đó bỏ dấu # ở đoạn dưới:
 
  st.image(
-     "anh_tam_an.jpg",
+     "anh_tam_an. jpg",
      use_container_width=True
  )
 
