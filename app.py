@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng trọ TÂM AN - AI Chatbot</title>
+    <title>Phòng trọ TÂM AN</title>
 
     <style>
         * {
@@ -16,22 +16,40 @@
         body {
             background: linear-gradient(135deg, #dbeafe, #f0fdf4);
             min-height: 100vh;
-            padding: 30px;
+            padding: 25px;
         }
 
         .header {
+            max-width: 1100px;
+            margin: auto;
             text-align: center;
             margin-bottom: 25px;
         }
 
         .header h1 {
             color: #1d4ed8;
-            font-size: 32px;
+            font-size: 36px;
+            margin-bottom: 8px;
         }
 
         .header p {
             color: #555;
-            margin-top: 8px;
+            font-size: 16px;
+        }
+
+        .room-image {
+            max-width: 1100px;
+            margin: 0 auto 25px;
+            text-align: center;
+        }
+
+        .room-image img {
+            width: 100%;
+            max-width: 750px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
         }
 
         .main {
@@ -44,14 +62,14 @@
 
         .card {
             background: white;
-            border-radius: 18px;
             padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
 
         .card h2 {
-            margin-bottom: 20px;
             color: #2563eb;
+            margin-bottom: 20px;
         }
 
         .input-group {
@@ -107,7 +125,7 @@
         .result p {
             display: flex;
             justify-content: space-between;
-            margin: 9px 0;
+            margin: 10px 0;
         }
 
         .total {
@@ -118,10 +136,8 @@
             font-weight: bold;
         }
 
-        /* CHATBOT */
-
         .chat-box {
-            height: 430px;
+            height: 570px;
             display: flex;
             flex-direction: column;
         }
@@ -137,10 +153,11 @@
 
         .message {
             max-width: 85%;
-            padding: 10px 13px;
+            padding: 11px 14px;
             border-radius: 12px;
             margin-bottom: 10px;
             line-height: 1.5;
+            white-space: pre-wrap;
         }
 
         .bot {
@@ -166,16 +183,18 @@
         .send-btn {
             background: #16a34a;
             color: white;
-            padding: 0 18px;
+            padding: 0 20px;
         }
 
         .send-btn:hover {
             background: #15803d;
         }
 
-        .typing {
-            color: #777;
-            font-style: italic;
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 14px;
         }
 
         @media (max-width: 800px) {
@@ -186,83 +205,69 @@
             .main {
                 grid-template-columns: 1fr;
             }
+
+            .room-image img {
+                height: 220px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <div class="room-image">
+        <img src="anh-tam-an.jpg" alt="Phòng trọ TÂM AN">
+    </div>
+
     <div class="header">
         <h1>🏠 PHÒNG TRỌ TÂM AN</h1>
-        <p>Quản lý tiền phòng & trợ lý AI thông minh</p>
+        <p>Quản lý tiền phòng và trợ lý AI thông minh</p>
     </div>
 
     <div class="main">
 
-        <!-- =========================
-             PHẦN TÍNH TIỀN PHÒNG
-        ========================== -->
-
         <div class="card">
-
             <h2>💰 Tính tiền phòng</h2>
 
             <div class="input-group">
                 <label>Tiền phòng (VNĐ)</label>
-                <input
-                    type="number"
-                    id="tienPhong"
-                    placeholder="Ví dụ: 3000000">
+                <input type="number" id="tienPhong" placeholder="3000000">
             </div>
 
             <div class="input-group">
                 <label>Số điện sử dụng (kWh)</label>
-                <input
-                    type="number"
-                    id="soDien"
-                    placeholder="Ví dụ: 100">
+                <input type="number" id="soDien" placeholder="100">
             </div>
 
             <div class="input-group">
                 <label>Đơn giá điện (VNĐ/kWh)</label>
-                <input
-                    type="number"
-                    id="giaDien"
-                    placeholder="Ví dụ: 3500">
+                <input type="number" id="giaDien" placeholder="3500">
             </div>
 
             <div class="input-group">
                 <label>Số nước sử dụng (m³)</label>
-                <input
-                    type="number"
-                    id="soNuoc"
-                    placeholder="Ví dụ: 10">
+                <input type="number" id="soNuoc" placeholder="10">
             </div>
 
             <div class="input-group">
                 <label>Đơn giá nước (VNĐ/m³)</label>
-                <input
-                    type="number"
-                    id="giaNuoc"
-                    placeholder="Ví dụ: 15000">
+                <input type="number" id="giaNuoc" placeholder="15000">
             </div>
 
             <div class="input-group">
                 <label>Tiền Wi-Fi (VNĐ)</label>
-                <input
-                    type="number"
-                    id="tienWifi"
-                    placeholder="Ví dụ: 100000">
+                <input type="number" id="tienWifi" placeholder="100000">
             </div>
 
-            <button
-                class="calculate-btn"
-                onclick="tinhTien()">
+            <button class="calculate-btn" onclick="tinhTien()">
                 🧮 TÍNH TIỀN
             </button>
 
             <div class="result">
-
                 <p>
                     <span>Tiền phòng:</span>
                     <span id="kqPhong">0 VNĐ</span>
@@ -287,245 +292,161 @@
                     <span>TỔNG:</span>
                     <span id="tongTien">0 VNĐ</span>
                 </p>
-
             </div>
-
         </div>
 
-
-        <!-- =========================
-             PHẦN AI CHATBOT
-        ========================== -->
-
         <div class="card chat-box">
-
             <h2>🤖 Trợ lý AI TÂM AN</h2>
 
             <div class="messages" id="messages">
-
                 <div class="message bot">
-                    👋 Xin chào! Tôi là trợ lý AI của phòng trọ
-                    <b>TÂM AN</b>.<br><br>
+                    👋 Xin chào! Tôi là trợ lý AI của phòng trọ TÂM AN.
 
-                    Bạn có thể hỏi tôi về học tập, lập trình,
-                    toán học, tiếng Anh, kiến thức, viết nội dung,
-                    công nghệ... hoặc những chủ đề khác.
+Bạn có thể hỏi tôi về:
+• Học tập
+• Toán học
+• Lập trình
+• Tiếng Anh
+• Công nghệ
+• Kiến thức
+• Viết nội dung
+• Và nhiều lĩnh vực khác.
                 </div>
-
             </div>
 
             <div class="chat-input">
-
                 <input
                     type="text"
                     id="userInput"
-                    placeholder="Bạn muốn hỏi gì?"
-                    onkeydown="if(event.key === 'Enter') guiTinNhan()">
+                    placeholder="Nhập câu hỏi..."
+                    onkeydown="if(event.key === 'Enter') guiTinNhan()"
+                >
 
-                <button
-                    class="send-btn"
-                    onclick="guiTinNhan()">
+                <button class="send-btn" onclick="guiTinNhan()">
                     Gửi
                 </button>
-
             </div>
-
         </div>
 
     </div>
 
+    <div class="footer">
+        © 2026 PHÒNG TRỌ TÂM AN
+    </div>
 
-<script>
+    <script>
+        function tinhTien() {
+            const tienPhong =
+                Number(document.getElementById("tienPhong").value) || 0;
 
-/* =====================================
-   TÍNH TIỀN PHÒNG
-===================================== */
+            const soDien =
+                Number(document.getElementById("soDien").value) || 0;
 
-function tinhTien() {
+            const giaDien =
+                Number(document.getElementById("giaDien").value) || 0;
 
-    const tienPhong =
-        Number(document.getElementById("tienPhong").value) || 0;
+            const soNuoc =
+                Number(document.getElementById("soNuoc").value) || 0;
 
-    const soDien =
-        Number(document.getElementById("soDien").value) || 0;
+            const giaNuoc =
+                Number(document.getElementById("giaNuoc").value) || 0;
 
-    const giaDien =
-        Number(document.getElementById("giaDien").value) || 0;
+            const tienWifi =
+                Number(document.getElementById("tienWifi").value) || 0;
 
-    const soNuoc =
-        Number(document.getElementById("soNuoc").value) || 0;
+            const tienDien = soDien * giaDien;
+            const tienNuoc = soNuoc * giaNuoc;
 
-    const giaNuoc =
-        Number(document.getElementById("giaNuoc").value) || 0;
+            const tongTien =
+                tienPhong +
+                tienDien +
+                tienNuoc +
+                tienWifi;
 
-    const tienWifi =
-        Number(document.getElementById("tienWifi").value) || 0;
+            document.getElementById("kqPhong").innerText =
+                tienPhong.toLocaleString("vi-VN") + " VNĐ";
 
+            document.getElementById("kqDien").innerText =
+                tienDien.toLocaleString("vi-VN") + " VNĐ";
 
-    const tienDien = soDien * giaDien;
+            document.getElementById("kqNuoc").innerText =
+                tienNuoc.toLocaleString("vi-VN") + " VNĐ";
 
-    const tienNuoc = soNuoc * giaNuoc;
+            document.getElementById("kqWifi").innerText =
+                tienWifi.toLocaleString("vi-VN") + " VNĐ";
 
-    const tongTien =
-        tienPhong +
-        tienDien +
-        tienNuoc +
-        tienWifi;
-
-
-    document.getElementById("kqPhong").innerText =
-        tienPhong.toLocaleString("vi-VN") + " VNĐ";
-
-    document.getElementById("kqDien").innerText =
-        tienDien.toLocaleString("vi-VN") + " VNĐ";
-
-    document.getElementById("kqNuoc").innerText =
-        tienNuoc.toLocaleString("vi-VN") + " VNĐ";
-
-    document.getElementById("kqWifi").innerText =
-        tienWifi.toLocaleString("vi-VN") + " VNĐ";
-
-    document.getElementById("tongTien").innerText =
-        tongTien.toLocaleString("vi-VN") + " VNĐ";
-}
-
-
-/* =====================================
-   CHATBOT
-===================================== */
-
-function themTinNhan(noiDung, loai) {
-
-    const messages =
-        document.getElementById("messages");
-
-    const message =
-        document.createElement("div");
-
-    message.className =
-        "message " + loai;
-
-    message.innerText =
-        noiDung;
-
-    messages.appendChild(message);
-
-    messages.scrollTop =
-        messages.scrollHeight;
-}
-
-
-async function guiTinNhan() {
-
-    const input =
-        document.getElementById("userInput");
-
-    const cauHoi =
-        input.value.trim();
-
-    if (!cauHoi) return;
-
-
-    // Hiển thị câu hỏi của người dùng
-    themTinNhan(cauHoi, "user");
-
-    input.value = "";
-
-
-    // Hiển thị trạng thái đang trả lời
-    const messages =
-        document.getElementById("messages");
-
-    const typing =
-        document.createElement("div");
-
-    typing.className =
-        "message bot typing";
-
-    typing.id =
-        "typing";
-
-    typing.innerText =
-        "🤖 AI đang suy nghĩ...";
-
-    messages.appendChild(typing);
-
-    messages.scrollTop =
-        messages.scrollHeight;
-
-
-    try {
-
-        /*
-         * QUAN TRỌNG:
-         *
-         * Đây là nơi gửi câu hỏi tới BACKEND AI.
-         *
-         * Không đặt API KEY trực tiếp ở đây.
-         *
-         * Backend của bạn sẽ nhận:
-         *
-         * {
-         *     message: cauHoi
-         * }
-         *
-         * rồi gọi API AI và trả về:
-         *
-         * {
-         *     reply: "Câu trả lời..."
-         * }
-         */
-
-        const response = await fetch("/api/chat", {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                message: cauHoi
-            })
-
-        });
-
-
-        if (!response.ok) {
-            throw new Error("Lỗi kết nối AI");
+            document.getElementById("tongTien").innerText =
+                tongTien.toLocaleString("vi-VN") + " VNĐ";
         }
 
+        function themTinNhan(noiDung, loai) {
+            const messages = document.getElementById("messages");
 
-        const data =
-            await response.json();
+            const message = document.createElement("div");
 
+            message.className = "message " + loai;
 
-        document
-            .getElementById("typing")
-            .remove();
+            message.innerText = noiDung;
 
+            messages.appendChild(message);
 
-        themTinNhan(
-            data.reply,
-            "bot"
-        );
+            messages.scrollTop = messages.scrollHeight;
+        }
 
+        async function guiTinNhan() {
+            const input = document.getElementById("userInput");
 
-    } catch (error) {
+            const cauHoi = input.value.trim();
 
-        document
-            .getElementById("typing")
-            .remove();
+            if (!cauHoi) {
+                return;
+            }
 
+            themTinNhan(cauHoi, "user");
 
-        themTinNhan(
-            "⚠️ Chưa kết nối được với máy chủ AI. Bạn cần cấu hình backend/API AI cho ứng dụng.",
-            "bot"
-        );
-    }
-}
+            input.value = "";
 
-</script>
+            const loading = document.createElement("div");
+
+            loading.className = "message bot";
+
+            loading.id = "loading";
+
+            loading.innerText = "🤖 AI đang suy nghĩ...";
+
+            document.getElementById("messages").appendChild(loading);
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: cauHoi
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("API Error");
+                }
+
+                const data = await response.json();
+
+                document.getElementById("loading").remove();
+
+                themTinNhan(data.reply, "bot");
+
+            } catch (error) {
+                document.getElementById("loading").remove();
+
+                themTinNhan(
+                    "⚠️ Chưa kết nối được với AI. Hãy kiểm tra máy chủ hoặc API AI.",
+                    "bot"
+                );
+            }
+        }
+    </script>
 
 </body>
 </html>
