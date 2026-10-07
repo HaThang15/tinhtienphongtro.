@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phòng trọ TÂM AN - AI Chatbot</title>
-st. image("PHONGTRO.jpg",use_container_width=True)
+
     <style>
         * {
             box-sizing: border-box;
@@ -18,6 +18,7 @@ st. image("PHONGTRO.jpg",use_container_width=True)
             min-height: 100vh;
             padding: 30px;
         }
+src="PHONGTRO.jpg"
 
         .header {
             text-align: center;
