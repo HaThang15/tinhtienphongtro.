@@ -1,452 +1,629 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phòng trọ TÂM AN</title>
+import streamlit as st
+from datetime import datetime
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+# =========================================================
+# CẤU HÌNH TRANG
+# =========================================================
+
+st.set_page_config(
+    page_title="TÂM AN - Tính tiền phòng trọ",
+    page_icon="🏠",
+    layout="wide"
+)
+
+# =========================================================
+# CSS GIAO DIỆN
+# =========================================================
+
+st.markdown("""
+<style>
+
+.main {
+    background-color: #f5f7fa;
+}
+
+.title {
+    text-align: center;
+    color: #1f4e79;
+    font-size: 42px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 3px 12px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.total {
+    background: linear-gradient(135deg, #1f4e79, #3b82b6);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.total-money {
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.chat-user {
+    background-color: #dbeafe;
+    padding: 12px;
+    border-radius: 12px;
+    margin: 8px 0;
+}
+
+.chat-bot {
+    background-color: #f1f5f9;
+    padding: 12px;
+    border-radius: 12px;
+    margin: 8px 0;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# TIÊU ĐỀ
+# =========================================================
+
+st.markdown(
+    '<div class="title">🏠 PHÒNG TRỌ TÂM AN</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="subtitle">Ứng dụng tính tiền phòng trọ & trợ lý AI</div>',
+    unsafe_allow_html=True
+)
+
+# =========================================================
+# MENU
+# =========================================================
+
+menu = st.sidebar.radio(
+    "📌 MENU",
+    [
+        "🏠 Tính tiền phòng",
+        "🤖 Chat Bot AI",
+        "ℹ️ Thông tin TÂM AN"
+    ]
+)
+
+# =========================================================
+# HÀM ĐỊNH DẠNG TIỀN
+# =========================================================
+
+def format_money(number):
+    return f"{number:,.0f} VNĐ".replace(",", ".")
+
+
+# =========================================================
+# TRANG TÍNH TIỀN PHÒNG
+# =========================================================
+
+if menu == "🏠 Tính tiền phòng":
+
+    st.subheader("🧾 TÍNH HÓA ĐƠN TIỀN PHÒNG")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.markdown('<div class="box">', unsafe_allow_html=True)
+
+        st.subheader("🏠 Thông tin phòng")
+
+        phong = st.text_input(
+            "Số phòng",
+            placeholder="Ví dụ: P101"
+        )
+
+        ten_khach = st.text_input(
+            "Tên người thuê",
+            placeholder="Nhập họ và tên"
+        )
+
+        tien_phong = st.number_input(
+            "💰 Tiền phòng / tháng",
+            min_value=0,
+            value=3000000,
+            step=100000
+        )
+
+        tien_wifi = st.number_input(
+            "📶 Tiền WiFi",
+            min_value=0,
+            value=100000,
+            step=10000
+        )
+
+        tien_rac = st.number_input(
+            "🗑️ Phí rác / dịch vụ",
+            min_value=0,
+            value=50000,
+            step=10000
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+
+        st.markdown('<div class="box">', unsafe_allow_html=True)
+
+        st.subheader("⚡ Điện & 💧 Nước")
+
+        dien_cu = st.number_input(
+            "⚡ Chỉ số điện tháng trước",
+            min_value=0.0,
+            value=0.0,
+            step=1.0
+        )
+
+        dien_moi = st.number_input(
+            "⚡ Chỉ số điện tháng này",
+            min_value=0.0,
+            value=0.0,
+            step=1.0
+        )
+
+        gia_dien = st.number_input(
+            "💡 Giá điện / kWh",
+            min_value=0,
+            value=3500,
+            step=100
+        )
+
+        nuoc_cu = st.number_input(
+            "💧 Chỉ số nước tháng trước",
+            min_value=0.0,
+            value=0.0,
+            step=1.0
+        )
+
+        nuoc_moi = st.number_input(
+            "💧 Chỉ số nước tháng này",
+            min_value=0.0,
+            value=0.0,
+            step=1.0
+        )
+
+        gia_nuoc = st.number_input(
+            "🚰 Giá nước / m³",
+            min_value=0,
+            value=15000,
+            step=1000
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # =====================================================
+    # TÍNH TOÁN
+    # =====================================================
+
+    if st.button("🧮 TÍNH TIỀN", use_container_width=True):
+
+        so_dien = dien_moi - dien_cu
+        so_nuoc = nuoc_moi - nuoc_cu
+
+        if so_dien < 0:
+            st.error("⚠️ Chỉ số điện mới không được nhỏ hơn chỉ số cũ.")
+            st.stop()
+
+        if so_nuoc < 0:
+            st.error("⚠️ Chỉ số nước mới không được nhỏ hơn chỉ số cũ.")
+            st.stop()
+
+        tien_dien = so_dien * gia_dien
+        tien_nuoc = so_nuoc * gia_nuoc
+
+        tong_tien = (
+            tien_phong
+            + tien_dien
+            + tien_nuoc
+            + tien_wifi
+            + tien_rac
+        )
+
+        # Lưu thông tin để Bot AI sử dụng
+        st.session_state["hoa_don"] = {
+            "phong": phong,
+            "khach": ten_khach,
+            "tien_phong": tien_phong,
+            "so_dien": so_dien,
+            "gia_dien": gia_dien,
+            "tien_dien": tien_dien,
+            "so_nuoc": so_nuoc,
+            "gia_nuoc": gia_nuoc,
+            "tien_nuoc": tien_nuoc,
+            "wifi": tien_wifi,
+            "rac": tien_rac,
+            "tong": tong_tien
         }
 
-        body {
-            background: linear-gradient(135deg, #dbeafe, #f0fdf4);
-            min-height: 100vh;
-            padding: 25px;
-        }
+        # =================================================
+        # HIỂN THỊ HÓA ĐƠN
+        # =================================================
 
-        .header {
-            max-width: 1100px;
-            margin: auto;
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        st.success("✅ Đã tính hóa đơn thành công!")
 
-        .header h1 {
-            color: #1d4ed8;
-            font-size: 36px;
-            margin-bottom: 8px;
-        }
+        st.markdown("## 🧾 HÓA ĐƠN PHÒNG TRỌ TÂM AN")
 
-        .header p {
-            color: #555;
-            font-size: 16px;
-        }
+        if phong:
+            st.write(f"**🏠 Phòng:** {phong}")
 
-        .room-image {
-            max-width: 1100px;
-            margin: 0 auto 25px;
-            text-align: center;
-        }
+        if ten_khach:
+            st.write(f"**👤 Người thuê:** {ten_khach}")
 
-        .room-image img {
-            width: 100%;
-            max-width: 750px;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 18px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
-        }
+        st.write(
+            f"**📅 Ngày lập hóa đơn:** "
+            f"{datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        )
 
-        .main {
-            max-width: 1100px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
+        st.divider()
 
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 18px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-        }
+        col1, col2, col3 = st.columns(3)
 
-        .card h2 {
-            color: #2563eb;
-            margin-bottom: 20px;
-        }
+        with col1:
+            st.metric(
+                "🏠 Tiền phòng",
+                format_money(tien_phong)
+            )
 
-        .input-group {
-            margin-bottom: 15px;
-        }
+        with col2:
+            st.metric(
+                "⚡ Tiền điện",
+                format_money(tien_dien)
+            )
 
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #333;
-        }
+        with col3:
+            st.metric(
+                "💧 Tiền nước",
+                format_money(tien_nuoc)
+            )
 
-        input {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-        }
+        col1, col2 = st.columns(2)
 
-        input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
+        with col1:
+            st.metric(
+                "📶 WiFi",
+                format_money(tien_wifi)
+            )
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
+        with col2:
+            st.metric(
+                "🗑️ Phí dịch vụ",
+                format_money(tien_rac)
+            )
 
-        .calculate-btn {
-            width: 100%;
-            background: #2563eb;
-            color: white;
-        }
-
-        .calculate-btn:hover {
-            background: #1d4ed8;
-        }
-
-        .result {
-            margin-top: 20px;
-            background: #eff6ff;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .result p {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-        }
-
-        .total {
-            border-top: 2px solid #2563eb;
-            padding-top: 12px;
-            color: #dc2626;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .chat-box {
-            height: 570px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 12px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 11px 14px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-        }
-
-        .bot {
-            background: #e0f2fe;
-            color: #075985;
-        }
-
-        .user {
-            background: #2563eb;
-            color: white;
-            margin-left: auto;
-        }
-
-        .chat-input {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-input input {
-            flex: 1;
-        }
-
-        .send-btn {
-            background: #16a34a;
-            color: white;
-            padding: 0 20px;
-        }
-
-        .send-btn:hover {
-            background: #15803d;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 25px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        @media (max-width: 800px) {
-            body {
-                padding: 15px;
-            }
-
-            .main {
-                grid-template-columns: 1fr;
-            }
-
-            .room-image img {
-                height: 220px;
-            }
-
-            .header h1 {
-                font-size: 28px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="room-image">
-        <img src="anh-tam-an.jpg" alt="Phòng trọ TÂM AN">
-    </div>
-
-    <div class="header">
-        <h1>🏠 PHÒNG TRỌ TÂM AN</h1>
-        <p>Quản lý tiền phòng và trợ lý AI thông minh</p>
-    </div>
-
-    <div class="main">
-
-        <div class="card">
-            <h2>💰 Tính tiền phòng</h2>
-
-            <div class="input-group">
-                <label>Tiền phòng (VNĐ)</label>
-                <input type="number" id="tienPhong" placeholder="3000000">
-            </div>
-
-            <div class="input-group">
-                <label>Số điện sử dụng (kWh)</label>
-                <input type="number" id="soDien" placeholder="100">
-            </div>
-
-            <div class="input-group">
-                <label>Đơn giá điện (VNĐ/kWh)</label>
-                <input type="number" id="giaDien" placeholder="3500">
-            </div>
-
-            <div class="input-group">
-                <label>Số nước sử dụng (m³)</label>
-                <input type="number" id="soNuoc" placeholder="10">
-            </div>
-
-            <div class="input-group">
-                <label>Đơn giá nước (VNĐ/m³)</label>
-                <input type="number" id="giaNuoc" placeholder="15000">
-            </div>
-
-            <div class="input-group">
-                <label>Tiền Wi-Fi (VNĐ)</label>
-                <input type="number" id="tienWifi" placeholder="100000">
-            </div>
-
-            <button class="calculate-btn" onclick="tinhTien()">
-                🧮 TÍNH TIỀN
-            </button>
-
-            <div class="result">
-                <p>
-                    <span>Tiền phòng:</span>
-                    <span id="kqPhong">0 VNĐ</span>
-                </p>
-
-                <p>
-                    <span>Tiền điện:</span>
-                    <span id="kqDien">0 VNĐ</span>
-                </p>
-
-                <p>
-                    <span>Tiền nước:</span>
-                    <span id="kqNuoc">0 VNĐ</span>
-                </p>
-
-                <p>
-                    <span>Tiền Wi-Fi:</span>
-                    <span id="kqWifi">0 VNĐ</span>
-                </p>
-
-                <p class="total">
-                    <span>TỔNG:</span>
-                    <span id="tongTien">0 VNĐ</span>
-                </p>
-            </div>
-        </div>
-
-        <div class="card chat-box">
-            <h2>🤖 Trợ lý AI TÂM AN</h2>
-
-            <div class="messages" id="messages">
-                <div class="message bot">
-                    👋 Xin chào! Tôi là trợ lý AI của phòng trọ TÂM AN.
-
-Bạn có thể hỏi tôi về:
-• Học tập
-• Toán học
-• Lập trình
-• Tiếng Anh
-• Công nghệ
-• Kiến thức
-• Viết nội dung
-• Và nhiều lĩnh vực khác.
+        st.markdown(
+            f"""
+            <div class="total">
+                <div>TỔNG TIỀN PHẢI THANH TOÁN</div>
+                <div class="total-money">
+                    {format_money(tong_tien)}
                 </div>
             </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            <div class="chat-input">
-                <input
-                    type="text"
-                    id="userInput"
-                    placeholder="Nhập câu hỏi..."
-                    onkeydown="if(event.key === 'Enter') guiTinNhan()"
-                >
+        st.write("")
 
-                <button class="send-btn" onclick="guiTinNhan()">
-                    Gửi
-                </button>
-            </div>
-        </div>
+        # =================================================
+        # BẢNG CHI TIẾT
+        # =================================================
 
-    </div>
+        st.subheader("📋 Chi tiết hóa đơn")
 
-    <div class="footer">
-        © 2026 PHÒNG TRỌ TÂM AN
-    </div>
-
-    <script>
-        function tinhTien() {
-            const tienPhong =
-                Number(document.getElementById("tienPhong").value) || 0;
-
-            const soDien =
-                Number(document.getElementById("soDien").value) || 0;
-
-            const giaDien =
-                Number(document.getElementById("giaDien").value) || 0;
-
-            const soNuoc =
-                Number(document.getElementById("soNuoc").value) || 0;
-
-            const giaNuoc =
-                Number(document.getElementById("giaNuoc").value) || 0;
-
-            const tienWifi =
-                Number(document.getElementById("tienWifi").value) || 0;
-
-            const tienDien = soDien * giaDien;
-            const tienNuoc = soNuoc * giaNuoc;
-
-            const tongTien =
-                tienPhong +
-                tienDien +
-                tienNuoc +
-                tienWifi;
-
-            document.getElementById("kqPhong").innerText =
-                tienPhong.toLocaleString("vi-VN") + " VNĐ";
-
-            document.getElementById("kqDien").innerText =
-                tienDien.toLocaleString("vi-VN") + " VNĐ";
-
-            document.getElementById("kqNuoc").innerText =
-                tienNuoc.toLocaleString("vi-VN") + " VNĐ";
-
-            document.getElementById("kqWifi").innerText =
-                tienWifi.toLocaleString("vi-VN") + " VNĐ";
-
-            document.getElementById("tongTien").innerText =
-                tongTien.toLocaleString("vi-VN") + " VNĐ";
+        data = {
+            "Khoản phí": [
+                "Tiền phòng",
+                "Tiền điện",
+                "Tiền nước",
+                "Tiền WiFi",
+                "Phí rác / dịch vụ"
+            ],
+            "Số lượng": [
+                "1 tháng",
+                f"{so_dien:.0f} kWh",
+                f"{so_nuoc:.0f} m³",
+                "1 tháng",
+                "1 tháng"
+            ],
+            "Đơn giá": [
+                format_money(tien_phong),
+                format_money(gia_dien) + "/kWh",
+                format_money(gia_nuoc) + "/m³",
+                format_money(tien_wifi),
+                format_money(tien_rac)
+            ],
+            "Thành tiền": [
+                format_money(tien_phong),
+                format_money(tien_dien),
+                format_money(tien_nuoc),
+                format_money(tien_wifi),
+                format_money(tien_rac)
+            ]
         }
 
-        function themTinNhan(noiDung, loai) {
-            const messages = document.getElementById("messages");
+        st.table(data)
 
-            const message = document.createElement("div");
 
-            message.className = "message " + loai;
+# =========================================================
+# CHAT BOT AI
+# =========================================================
 
-            message.innerText = noiDung;
+elif menu == "🤖 Chat Bot AI":
 
-            messages.appendChild(message);
+    st.subheader("🤖 TRỢ LÝ AI - TÂM AN")
 
-            messages.scrollTop = messages.scrollHeight;
-        }
+    st.info(
+        "💬 Bạn có thể hỏi Bot về tiền phòng, điện, nước, WiFi "
+        "hoặc các chủ đề khác."
+    )
 
-        async function guiTinNhan() {
-            const input = document.getElementById("userInput");
+    # Khởi tạo lịch sử chat
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-            const cauHoi = input.value.trim();
+    # Hiển thị lịch sử
+    for message in st.session_state.messages:
 
-            if (!cauHoi) {
-                return;
-            }
+        if message["role"] == "user":
 
-            themTinNhan(cauHoi, "user");
+            st.markdown(
+                f"""
+                <div class="chat-user">
+                    👤 <b>Bạn:</b> {message["content"]}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-            input.value = "";
+        else:
 
-            const loading = document.createElement("div");
+            st.markdown(
+                f"""
+                <div class="chat-bot">
+                    🤖 <b>TÂM AN AI:</b> {message["content"]}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-            loading.className = "message bot";
+    # Nhập câu hỏi
+    question = st.chat_input(
+        "Nhập câu hỏi cho TÂM AN AI..."
+    )
 
-            loading.id = "loading";
+    if question:
 
-            loading.innerText = "🤖 AI đang suy nghĩ...";
+        st.session_state.messages.append({
+            "role": "user",
+            "content": question
+        })
 
-            document.getElementById("messages").appendChild(loading);
+        q = question.lower()
 
-            try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: cauHoi
-                    })
-                });
+        # =============================================
+        # LẤY HÓA ĐƠN GẦN NHẤT
+        # =============================================
 
-                if (!response.ok) {
-                    throw new Error("API Error");
-                }
+        hoa_don = st.session_state.get("hoa_don", None)
 
-                const data = await response.json();
+        # =============================================
+        # BOT XỬ LÝ CÂU HỎI VỀ TIỀN PHÒNG
+        # =============================================
 
-                document.getElementById("loading").remove();
+        if any(word in q for word in [
+            "tổng tiền",
+            "tổng",
+            "thanh toán",
+            "hóa đơn",
+            "hoá đơn"
+        ]) and hoa_don:
 
-                themTinNhan(data.reply, "bot");
+            answer = (
+                f"Hóa đơn gần nhất của phòng "
+                f"{hoa_don['phong'] or 'chưa nhập'} là "
+                f"**{format_money(hoa_don['tong'])}**.\n\n"
+                f"🏠 Tiền phòng: {format_money(hoa_don['tien_phong'])}\n\n"
+                f"⚡ Tiền điện: {format_money(hoa_don['tien_dien'])}\n\n"
+                f"💧 Tiền nước: {format_money(hoa_don['tien_nuoc'])}\n\n"
+                f"📶 WiFi: {format_money(hoa_don['wifi'])}\n\n"
+                f"🗑️ Phí dịch vụ: {format_money(hoa_don['rac'])}"
+            )
 
-            } catch (error) {
-                document.getElementById("loading").remove();
+        elif any(word in q for word in [
+            "tiền điện",
+            "tiền điện bao nhiêu",
+            "điện"
+        ]) and hoa_don:
 
-                themTinNhan(
-                    "⚠️ Chưa kết nối được với AI. Hãy kiểm tra máy chủ hoặc API AI.",
-                    "bot"
-                );
-            }
-        }
-    </script>
+            answer = (
+                f"⚡ Phòng {hoa_don['phong'] or ''} sử dụng "
+                f"**{hoa_don['so_dien']:.0f} kWh**.\n\n"
+                f"Đơn giá: {format_money(hoa_don['gia_dien'])}/kWh.\n\n"
+                f"Tiền điện là **{format_money(hoa_don['tien_dien'])}**."
+            )
 
-</body>
-</html>
+        elif any(word in q for word in [
+            "tiền nước",
+            "nước"
+        ]) and hoa_don:
+
+            answer = (
+                f"💧 Phòng {hoa_don['phong'] or ''} sử dụng "
+                f"**{hoa_don['so_nuoc']:.0f} m³** nước.\n\n"
+                f"Đơn giá: {format_money(hoa_don['gia_nuoc'])}/m³.\n\n"
+                f"Tiền nước là **{format_money(hoa_don['tien_nuoc'])}**."
+            )
+
+        elif "wifi" in q:
+
+            if hoa_don:
+                answer = (
+                    f"📶 Tiền WiFi hiện đang được tính là "
+                    f"**{format_money(hoa_don['wifi'])}/tháng**."
+                )
+            else:
+                answer = (
+                    "📶 Bạn chưa tạo hóa đơn. "
+                    "Thông thường tiền WiFi được nhập tại phần "
+                    "'Tính tiền phòng'."
+                )
+
+        elif any(word in q for word in [
+            "cách tính tiền phòng",
+            "tính tiền phòng",
+            "tiền trọ"
+        ]):
+
+            answer = (
+                "🏠 Cách tính tiền phòng TÂM AN:\n\n"
+                "**Tổng tiền = Tiền phòng + Tiền điện + "
+                "Tiền nước + WiFi + Phí dịch vụ.**\n\n"
+                "⚡ Tiền điện = Số điện sử dụng × Đơn giá điện.\n\n"
+                "💧 Tiền nước = Số nước sử dụng × Đơn giá nước."
+            )
+
+        # =============================================
+        # CÂU HỎI CHÀO HỎI
+        # =============================================
+
+        elif any(word in q for word in [
+            "xin chào",
+            "chào",
+            "hello",
+            "hi"
+        ]):
+
+            answer = (
+                "👋 Xin chào! Mình là **TÂM AN AI**.\n\n"
+                "Mình có thể giúp bạn:\n"
+                "🏠 Tính tiền phòng\n"
+                "⚡ Tính tiền điện\n"
+                "💧 Tính tiền nước\n"
+                "📶 Tính tiền WiFi\n"
+                "🧾 Kiểm tra hóa đơn\n"
+                "💬 Và trả lời các câu hỏi thông thường."
+            )
+
+        elif any(word in q for word in [
+            "bạn là ai",
+            "ai vậy",
+            "giới thiệu"
+        ]):
+
+            answer = (
+                "🤖 Mình là **TÂM AN AI**, trợ lý ảo của "
+                "phòng trọ TÂM AN.\n\n"
+                "Mình được thiết kế để hỗ trợ người thuê "
+                "tra cứu và hiểu các khoản tiền phòng, điện, "
+                "nước, WiFi và nhiều vấn đề khác."
+            )
+
+        # =============================================
+        # CÂU HỎI THỜI GIAN
+        # =============================================
+
+        elif "hôm nay" in q:
+
+            answer = (
+                f"📅 Hôm nay là "
+                f"{datetime.now().strftime('%d/%m/%Y')}."
+            )
+
+        # =============================================
+        # CÂU HỎI CHUNG
+        # =============================================
+
+        elif any(word in q for word in [
+            "cảm ơn",
+            "thanks"
+        ]):
+
+            answer = (
+                "😊 Không có gì! TÂM AN AI luôn sẵn sàng "
+                "hỗ trợ bạn."
+            )
+
+        else:
+
+            answer = (
+                "🤖 Mình có thể hỗ trợ nhiều chủ đề cơ bản. "
+                "Bạn có thể hỏi mình về:\n\n"
+                "🏠 Tiền phòng TÂM AN\n"
+                "⚡ Tiền điện\n"
+                "💧 Tiền nước\n"
+                "📶 WiFi\n"
+                "🧾 Hóa đơn\n"
+                "💻 Công nghệ\n"
+                "📚 Học tập\n"
+                "🌎 Kiến thức đời sống\n"
+                "💬 Hoặc đặt một câu hỏi bất kỳ."
+            )
+
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": answer
+        })
+
+        st.rerun()
+
+
+# =========================================================
+# THÔNG TIN TÂM AN
+# =========================================================
+
+elif menu == "ℹ️ Thông tin TÂM AN":
+
+    st.subheader("🏠 GIỚI THIỆU PHÒNG TRỌ TÂM AN")
+
+    st.markdown("""
+    ### 🏡 PHÒNG TRỌ TÂM AN
+
+    **TÂM AN** hướng đến xây dựng mô hình phòng trọ
+    tiện nghi, minh bạch và thuận tiện cho người thuê.
+
+    ### 💡 Tiện ích
+
+    - 🏠 Phòng trọ
+    - ⚡ Điện
+    - 💧 Nước
+    - 📶 WiFi
+    - 🗑️ Dịch vụ vệ sinh
+    - 🤖 Trợ lý AI
+
+    ### 🤖 TÂM AN AI
+
+    Trợ lý AI hỗ trợ người thuê:
+
+    - Kiểm tra tiền phòng
+    - Tính tiền điện
+    - Tính tiền nước
+    - Kiểm tra hóa đơn
+    - Giải đáp các câu hỏi thường gặp
+    - Hỗ trợ kiến thức và thông tin cơ bản
+
+    ### ❤️ TÂM AN
+
+    **An tâm khi ở – Minh bạch khi thanh toán.**
+    """)
+
+    st.success(
+        "🏠 Cảm ơn bạn đã sử dụng ứng dụng quản lý phòng trọ TÂM AN!"
+    )
