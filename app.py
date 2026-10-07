@@ -18,7 +18,6 @@
             min-height: 100vh;
             padding: 30px;
         }
-src="PHONGTRO.jpg"
 
         .header {
             text-align: center;
