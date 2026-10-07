@@ -72,12 +72,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# =========================================================
+# CHỖ CHÈN ẢNH
+# =========================================================
 
+# Nếu có ảnh, đặt tên là:
+# anh_tam_an.jpg
+#
+# và để cùng thư mục với file app.py
+#
+# Sau đó bỏ dấu # ở đoạn dưới:
 
- st.image(
-     "PHONGTRO.jpg",
-     use_container_width=True
- )
+# st.image(
+#     "anh_tam_an.jpg",
+#     use_container_width=True
+# )
 
 
 # =========================================================
